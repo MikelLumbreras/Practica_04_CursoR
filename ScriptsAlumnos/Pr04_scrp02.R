@@ -35,6 +35,8 @@ BuildingData <- BuildingData[,-1]
 OutliersIQR <- function(DatosEdificio)
 {
  ## ESTA FUNCION USARA LA function boxplot()
+  ## PROBAR EL help()
+  
  ## DEVOLVER: Edificio_NO <-- SIN OUTLIERS Y outliers
   return(list(Edificio_NO , outliers))
 }
@@ -104,3 +106,13 @@ OutliersDBSCAN <- function(DatosEdificio)
 }
 
 #### FALTARIA COMPARAR LOS OUTLIERS IDENTIFICADOS --------------------------------------------------------------------------
+### COGER DOS VECTORES Y JUNTARLOS EN UN FRAME Y COMPARAR
+Outliers_IQR <-
+Outliers_DBSCAN <- 
+### COMPARAMOS USANDO BOXPLOTS
+  
+  
+#### FIN DEL SCRIPT -------------------------------------------------------------------------------------
+
+
+

@@ -17,12 +17,14 @@ rm(list = ls())
 ## ESTA LIBRERIA CONTIENE EL ALGORITMO DE K-MEANS
 install.packages("stats")
 library("stats")
+help("stats")
 ## ESTA LIBRERIA TRAE INCLUIDOS LOS CVI-S QUE NOS INTERESAN
 install.packages("clusterCrit")
 library("clusterCrit")
+help("clusterCrit")
 
 ## PRIMER PASO: CARGAMOS LOS DATOS EN BRUTO, LES CAMBIAMOS EL LA FORMA
-setwd("C:/Users/mlumbreras001/OneDrive/Tecnalia/ProyectosR/Practica_04_CursoR/Data")
+setwd("C:/Users/MikelLumbreras/OneDrive - Managing Innovation Strategies (MainStrat)/EHU/Sesion_4/Practica_04_CursoR-main/Data/")
 BuildingData <- read.csv(file = "BuildingData.csv" , header = T , sep = ",")
 BuildingData <- BuildingData[,-1]
 
@@ -52,6 +54,7 @@ CambiandoFormato <- function(Building_Frame)
 }
 
 ### SIGUIENTE PASO: NORMALIZAR LOS DATOS
+## LA FUNCION SCALE <-- help("scale")
 NormalizandoDatos <- function(FrameProfiles)
 {
   for (i in 1:length(FrameProfiles[,1]))
@@ -105,9 +108,10 @@ rownames(ClusterValidation) <- c("Dunn Index" , "Silhouette Index" , "Davies-Bou
 ClusterValidation[,1] <- CVIAnalysis(TresClusters , FrameProfilesNormalizado)
 ClusterValidation[,2] <- CVIAnalysis(CuatroClusters , FrameProfilesNormalizado)
 
+## ¿QUE PROCESO ES MEJOR?
 
 ### FIN DE LA PRACTICA OBLIGATORIA
-## OPTATIVA: CUAL PROCESO ES MEJOR?
+
 
 ### SI TENEIS TIEMPO, DIBUJAR LOS PERFILES DE DELTA_T, SEPARADOS POR CLUSTERS
 ### facet_wrap()

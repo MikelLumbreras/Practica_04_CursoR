@@ -60,11 +60,10 @@ for (n in 2:length(RangosList))
 FramePlotear[,2] <- VectorRango
 
 ### AHORA PLOTEAMOS EL BOXPLOT
-
 library("ggplot2")
 dev.new()
 ggplot(data = FramePlotear , aes(x = `TEMP RANGE` , y = kWh , fill = TYPE)) + 
-  geom_boxplot() + ylim(0,1000) +
+  geom_boxplot() + 
   scale_fill_brewer(palette = "Set1") + 
   theme(axis.title = element_text(size = 14 , face = "bold") , 
         axis.text.x = element_text(size = 12 , angle = 0 , face = "bold") , 
@@ -77,9 +76,10 @@ ggplot(data = FramePlotear , aes(x = `TEMP RANGE` , y = kWh , fill = TYPE)) +
 ### LOS FACTORES SE ORDENAN MAL
 FramePlotear$`TEMP RANGE` <- factor(FramePlotear$`TEMP RANGE` , levels = VectorRangos)
 
+#### VOLVER A DIBUJAR: Rellenar primera linea
 dev.new()
-ggplot(data = FramePlotear , aes(x = `TEMP RANGE` , y = kWh , fill = TYPE)) + 
-  geom_boxplot() + ylim(0,1000) +
+ggplot(data =  , aes()) + 
+  geom_boxplot() + 
   scale_fill_brewer(palette = "Set1") + 
   theme(axis.title = element_text(size = 14 , face = "bold") , 
         axis.text.x = element_text(size = 12 , angle = 0 , face = "bold") , 
@@ -88,3 +88,9 @@ ggplot(data = FramePlotear , aes(x = `TEMP RANGE` , y = kWh , fill = TYPE)) +
   theme(title = element_text(size = 16 , face = "bold")) + 
   theme(legend.title = element_text(size = 16 , face = "bold") , legend.text = element_text(size = 16)) + 
   theme(strip.text.x = element_text(size = 16 , face = "bold")) + ggtitle("Demanda por Temperaturas")
+
+
+#### FIN DEL SCRIPT -------------------------------------------------------------------------------------
+
+
+

@@ -12,7 +12,7 @@
 ### SCRIPT 4_1: ENTRAMOS EN CALOR/REPASO
 
 ## CARGAMOS LOS ARCHIVOS QUE CREAMOS EN LA PREACTICA ANTERIOR
-setwd("C:/Users/mlumbreras001/OneDrive/Tecnalia/ProyectosR/Practica_02_CursoR/Results")
+setwd("C:/Users/MikelLumbreras/OneDrive - Managing Innovation Strategies (MainStrat)/EHU/Sesion_2/Practica_02_CursoR-master/Results")
 
 ResultadosPractica02 <- read.csv(file = "TestingFrame.csv" , header = T , sep = ",")
 ResultadosPractica02 <- ResultadosPractica02[,-1]
@@ -56,7 +56,7 @@ FramePlotear[,2] <- VectorRango
 library("ggplot2")
 dev.new()
 ggplot(data = FramePlotear , aes(x = `TEMP RANGE` , y = kWh , fill = TYPE)) + 
-  geom_boxplot() + ylim(0,1000) +
+  geom_boxplot() + 
   scale_fill_brewer(palette = "Set1") + 
   theme(axis.title = element_text(size = 14 , face = "bold") , 
         axis.text.x = element_text(size = 12 , angle = 0 , face = "bold") , 
@@ -71,7 +71,7 @@ FramePlotear$`TEMP RANGE` <- factor(FramePlotear$`TEMP RANGE` , levels = VectorR
 
 dev.new()
 ggplot(data = FramePlotear , aes(x = `TEMP RANGE` , y = kWh , fill = TYPE)) + 
-  geom_boxplot() + ylim(0,1000) +
+  geom_boxplot() + 
   scale_fill_brewer(palette = "Set1") + 
   theme(axis.title = element_text(size = 14 , face = "bold") , 
         axis.text.x = element_text(size = 12 , angle = 0 , face = "bold") , 

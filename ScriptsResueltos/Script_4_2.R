@@ -17,10 +17,11 @@ rm(list = ls())
 ### SI NO LO TIENES INSLATALADO
 install.packages("dbscan")
 library("dbscan")
-
+install.packages("ggplot2")
+library("ggplot2")
 
 ### CARGAMOS EL ARCHIVO HORARIO DE CON LAS DELTA Ts
-setwd("C:/Users/mlumbreras001/OneDrive/Tecnalia/ProyectosR/Practica_04_CursoR/Data")
+setwd("C:/Users/MikelLumbreras/OneDrive - Managing Innovation Strategies (MainStrat)/EHU/Sesion_4/Practica_04_CursoR-main/Data/")
 
 BuildingData <- read.csv("BuildingData.csv" , header = T , sep = ",")
 ### QUITAMOS LA PRIMERA COLUMNA
@@ -29,15 +30,16 @@ BuildingData <- BuildingData[,-1]
 ### OBJETIVO: IDENTIFICAR POSIBLES OUTLIERS PARA LA DELTA T
 
 ### METODO 1: INTERQUARTILE METHOD
-
 OutliersIQR <- function(DatosEdificio)
 {
+  
   outliers <- boxplot(DatosEdificio$Flow.T.ºC. , plot=FALSE)$out
   if (length(outliers) >= 1)
     Edificio_NO <- DatosEdificio[-which(DatosEdificio$Power.kW. %in% outliers),]
-  return(list(Edificio_NO , outliers))
+  return(outliers)
 }
 
+### METODO 2: DENSITY BASED CLUSTERING
 OutliersDBSCAN <- function(DatosEdificio)
 {
   FlowTemp <- as.matrix(cbind(DatosEdificio$Temperature, DatosEdificio$Flow.T.ºC.)) 
@@ -58,7 +60,6 @@ OutliersDBSCAN <- function(DatosEdificio)
   }
   # first approximate the function, since we have only a few points
   indices <- get.elbow.points.indices(c(1:length(knee)), knee, 0.01) # threshold for huge jump = 10
-  png(paste(paste("Building" , IDBuilding ,sep = ""), ".png" , sep = "") , height = 480 , width = 480 , units = "px")
   dbscan::kNNdistplot(FlowTemp, k =  3)
   abline(h = knee[indices[1]], lty = 2)
   #dev.off()
@@ -71,16 +72,17 @@ OutliersDBSCAN <- function(DatosEdificio)
   mtext(side=1, line=3.8, "Points (sample) sorted by distance", font=2,cex=1.5)
   mtext(side=2, line=3, "3-NN DISTANCE", font=2, cex=1.5)
   abline(h = knee[indices[1]], lty = 2)
-  #dev.off()
+  dev.off()
   #### ENTONCES LA EPSILON OPTIMIZADA ES LA SIGUIENTE
   EpsOpt <- knee[indices[1]]
   #### VOLVEMOS A HACER LA CLUSTERIZACION
   dbscanResultOpt <- fpc::dbscan(FlowTemp, eps = EpsOpt, MinPts = 3)
   #dev.new()
   #plot(dbscanResultOpt, Load, main = "DBSCAN", frame = FALSE)
-  BuildingID_NO <- DatosEdificio[which(dbscanResultOpt[["isseed"]] == T), ]
+  DatosEdificio_NO <- DatosEdificio[which(dbscanResultOpt[["isseed"]] == T), ]
+  OutliersBuilding <- DatosEdificio[which(dbscanResultOpt[["isseed"]] == F),]
   #### VAMOS A DIBUJAR LOS OUTLIERS
-  OutlierPlot <- data.frame(matrix(ncol = 3 , nrow = length(BuildingID[,1])))
+  OutlierPlot <- data.frame(matrix(ncol = 3 , nrow = length(DatosEdificio[,1])))
   colnames(OutlierPlot) <- c("T[ºC]" , "kWh" , "OutlierDet")
   OutlierPlot[,1:2] <- FlowTemp
   OutlierPlot[,3] <- dbscanResult[["isseed"]]
@@ -90,10 +92,21 @@ OutliersDBSCAN <- function(DatosEdificio)
     scale_color_brewer(palette = "Set1") + 
     theme(axis.title = element_text(size = 16 , face = "bold") , axis.text = element_text(size = 16 , face = "bold")) + 
     theme(legend.title = element_text(size = 16 , face = "bold") , legend.text = element_text(size = 16, face = "bold")) + 
-    guides(colour = guide_legend(override.aes = list(size=10))) + ggtitle(paste("Building " , IDBuilding ,sep = "")) + 
+    guides(colour = guide_legend(override.aes = list(size=10))) + ggtitle("Outliers Flow T") + 
     theme(title = element_text(size = 16 , face = "bold"))
+  return(OutliersBuilding)
 }
 
 
-
 #### FALTARIA COMPARAR LOS OUTLIERS IDENTIFICADOS --------------------------------------------------------------------------
+### COGER DOS VECTORES Y JUNTARLOS EN UN FRAME Y COMPARAR
+Outliers_IQR <- OutliersIQR(BuildingData)
+Outliers_DBSCAN <- OutliersDBSCAN(BuildingData)
+
+### COMPARAMOS USANDO BOXPLOTS
+dev.new()
+boxplot(Outliers_IQR , Outliers_DBSCAN$Power.kW.)
+
+
+
+
