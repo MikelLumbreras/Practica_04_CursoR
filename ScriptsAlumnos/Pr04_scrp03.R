@@ -1,4 +1,4 @@
-### SCRIPT 4.2: CLUSTERIZACION NO-SUPERVISADA: K-MEANS
+#### SCRIPT 4.3: CLUSTERIZACION NO-SUPERVISADA: K-MEANS
 ##################
 ### Curso de Doctorado
 ### Análisis de datos para cargas energéticas en edificios. Contexto, Métodos de análisis, Herramientas y Aplicaciones
@@ -17,17 +17,24 @@ rm(list = ls())
 ## ESTA LIBRERIA CONTIENE EL ALGORITMO DE K-MEANS
 install.packages("stats")
 library("stats")
+help("stats")
 ## ESTA LIBRERIA TRAE INCLUIDOS LOS CVI-S QUE NOS INTERESAN
 install.packages("clusterCrit")
 library("clusterCrit")
+help("clusterCrit")
+### ESTA LIBRERIA SE UTILIZARÁ PARA DIBUJAR
+install.packages("ggplot2")
+library("ggplot2")
+help("ggplot2")
 
 ## PRIMER PASO: CARGAMOS LOS DATOS EN BRUTO, LES CAMBIAMOS EL LA FORMA
-setwd("")
-BuildingData <- read.csv(file = "BuildingData.csv" , header = T , sep = ",")
+setwd()
+BuildingData <- 
 BuildingData <- BuildingData[,-1]
 
 #### ESTA FUNCION LA PODEIS COPIAR Y PEGAR, NO PERDAIS MAS TIEMPO
-## EL OBETIVO DE ESTA FUNCION: CAMBIAR FORMATO DE HORARIO A DATOS HORARIOS ORDENADOS POR DÍA
+## ESTA DUNCION SIRVE PARA CAMBIAR EL FROMATO A LOS DATOS
+## CLUSTERIZAMOS LOS DIAS DEL AÑO <- PERFILES TIPO
 CambiandoFormato <- function(Building_Frame)
 {
   Dias_Año <- unique(Building_Frame$Day_Year)
@@ -49,14 +56,26 @@ CambiandoFormato <- function(Building_Frame)
   }
   ### BORRAMOS LAS FILAS QUE SEAN NAs
   Frame_Dia <- Frame_Dia[Vector_sin_NA, ] 
-  return(Frame_Dia)
+  ### RELLENAR 
+  return()
 }
 
 ### SIGUIENTE PASO: NORMALIZAR LOS DATOS
+## LA FUNCION SCALE <-- help("scale")
 NormalizandoDatos <- function(FrameProfiles)
 {
-  ## USAR LA FUNCION scale()
-  return(FrameProfiles)
+  ### EJECUTAR EN LA CONSOLA: help("sd") y help("scale")
+  for (i in 1:length(FrameProfiles[,1]))
+  {
+    #### DAN ERRORES EN LOS DIAS QUE LA SD = 0
+    ### AHI DIAS SIN DEMANDA EN TODO EL DÍA
+    if (sd(matrix(t(FrameProfiles[i, c(1:24)]))) == 0)
+      FrameProfiles[i,] <- 0
+    else
+      FrameProfiles[i,] <- scale(matrix(t(FrameProfiles[i,])) , scale =  T) 
+  }
+  ### DEVOLBEMOS EL FRAME
+  return()
 }
 
 ### CREAMOS LA FUNCION PARA EL K-MEANS
@@ -66,26 +85,27 @@ ClusteringKmeansFunction <- function(FrameProfilesNormalizado , K_mean)
   set.seed(101)
   ## nstart es las veces que se inicia el algoritmo desde puntos diferentes
   ## centers = en cuantos grupos se quiere clusterizar
-  ## USAR LA FUNCION kmeans()
+  ClustersList <- kmeans(FrameProfilesNormalizado , nstart = 50 , centers = K_mean , iter.max = 50)
   ### OBSERVAR LA LISTA DE LOS CLUSTERS
+  #summary(ClustersList)
   Clusters <- ClustersList[["cluster"]]
-  return(Clusters)
+  #summary(Clusters)
+  ### AQUI RELLENAMOS LA FUNCION RETURN
+  return()
 }
 
-### ANALIZAMOS LA EFICIENCIA DE LOS CLUSTERS CON CVIs
 CVIAnalysis <- function(VectorCluster , FrameProfilesNormalizado)
 {
   ## EL 1: DUNN, EL 2: SILHOUETTE Y EL 3: DAVIES-BOULDIN
   VectorCVI <- c()
   #PODEIS EJECUTAR EL SIGUIENTE LINEA, ARA VER COMO SE ORDENAN LOS CVIs 
-  getCriteriaNames(TRUE)
+  #getCriteriaNames(TRUE)
   NombresCVI <- c("Dunn" , "Silhouette" , "Davies_Bouldin")
   for (i in 1:length(NombresCVI))
-    VectorCVI[i] <- 
+    VectorCVI[i] <- intCriteria(as.matrix(FrameProfilesNormalizado) , VectorCluster , NombresCVI[i])[[1]]
   return(VectorCVI)
 }
 
-### APLICAMOS LA METODOLOGÍA USANDO LAS FUNCIONES QUE HEMOS VISTO
 ##### 1. GENERAMOS EL FRAME
 FrameProfiles <- 
 ##### 2. NORMALIZAMOS
@@ -102,10 +122,64 @@ rownames(ClusterValidation) <- c("Dunn Index" , "Silhouette Index" , "Davies-Bou
 ClusterValidation[,1] <- 
 ClusterValidation[,2] <- 
 
-### FIN DE LA PRACTICA OBLIGATORIA
-## OPTATIVA: CUAL PROCESO ES MEJOR?
+## ¿QUE PROCESO ES MEJOR?
+ClusterFrame <- cbind.data.frame(TresClusters , CuatroClusters)
+colnames(ClusterFrame) <- c("K=3" , "K=4")
 
-### SI TENEIS TIEMPO, DIBUJAR LOS PERFILES DE DELTA_T, SEPARADOS POR CLUSTERS
+### FIN DE LA PRACTICA OBLIGATORIA
+### VAMOS A UTILIZAR ESTAS FUNCIONES PARA DIBUJARLOS
+TransformandoFrame <- function(FrameBuilding, ClusterFrame , Cluster_K)
+{
+  FrameggPlotCluster <- data.frame(matrix(ncol = 5 , nrow = 24*length(FrameBuilding[,1])))
+  colnames(FrameggPlotCluster) <- c("HOUR" , "TEMP" , "CLUSTER" , "DAY" , "TYPE")
+  VectorDia <- c(0:23)
+  FrameggPlotCluster[,1] <- rep(VectorDia , times = length(FrameBuilding[,1]))
+  VectorDem <- as.vector(FrameBuilding[1,1:24])
+  for (n in 2:length(FrameBuilding[,1]))
+    VectorDem <- cbind(VectorDem, FrameBuilding[n,1:24])
+  FrameggPlotCluster[,2] <- t(VectorDem[1,])
+  VectorCluster <- rep(ClusterFrame[1,Cluster_K-2] , times = 24)
+  for (n in 2:length(ClusterFrame[,1]))
+    VectorCluster <- c(VectorCluster , rep(ClusterFrame[n,Cluster_K-2] , times = 24))
+  FrameggPlotCluster[,3] <- factor(VectorCluster , levels = as.factor(1:Cluster_K))
+  VectorDay <- rep(1, times = 24)
+  for (n in 2:length(FrameBuilding[,1]))
+    VectorDay <- c(VectorDay , rep(n, times = 24))
+  FrameggPlotCluster[,4] <- VectorDay 
+  FrameggPlotCluster[,5] <- "REAL"
+  return(FrameggPlotCluster)
+}
+
+### FUNCION 3 <-- DIBUJAR
+DibujandoClusteres <- function(FrameggPlotCluster , Cluster_K)
+{
+  FrameDefPlot <- rbind.data.frame(FrameggPlotCluster)
+  #### PARA CADA
+  NumeroCol <- c()
+  if (Cluster_K == 3 | Cluster_K == 6 | Cluster_K == 5 | Cluster_K > 6)
+    NumeroCol <- 3
+  if (Cluster_K == 4)
+    NumeroCol <- 2
+  dev.new()
+  ggplot(data = FrameggPlotCluster, aes(x = HOUR , y = `TEMP` , group = DAY , colour = CLUSTER)) + geom_line() + 
+    facet_wrap(~ CLUSTER , ncol = NumeroCol) + scale_color_brewer(palette = "Paired") + 
+    theme(axis.title = element_text(size = 18 , face = "bold") , axis.text = element_text(size = 18)) + 
+    theme(panel.background = element_blank() , panel.grid.major =  element_line(colour = "grey" , size = 0.2)) + 
+    theme(title = element_text(size = 16 , face = "bold")) + theme(legend.key=element_blank()) + 
+    theme(legend.title = element_text(size = 20 , face = "bold") , legend.text = element_text(size = 24)) + 
+    theme(strip.text.x = element_text(size = 20 , face = "bold")) + 
+    guides(color = guide_legend(override.aes = list(size = 3))) + 
+    theme(legend.key.width = unit(1.2,"cm"))
+}
+
+#### DIBUJANDO LOS CLUSTERES POR SEPARADO
+### 3 clusteres
+DibujandoClusteres(TransformandoFrame(FrameProfilesNormalizado , ClusterFrame , 3) , 3)
+dev.off()
+### 4 clusteres
+DibujandoClusteres(TransformandoFrame(FrameProfilesNormalizado , ClusterFrame , 3) , 3)
+dev.off()
+
 ### facet_wrap()
 
 rm(list=ls())
