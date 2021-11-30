@@ -109,8 +109,58 @@ ClusterValidation[,1] <- CVIAnalysis(TresClusters , FrameProfilesNormalizado)
 ClusterValidation[,2] <- CVIAnalysis(CuatroClusters , FrameProfilesNormalizado)
 
 ## ¿QUE PROCESO ES MEJOR?
+ClusterFrame <- cbind.data.frame(TresClusters , CuatroClusters)
+colnames(ClusterFrame) <- c("K=3" , "K=4")
 
 ### FIN DE LA PRACTICA OBLIGATORIA
+### VAMOS A UTILIZAR ESTAS FUNCIONES PARA DIBUJARLOS
+TransformandoFrame <- function(FrameBuilding, ClusterFrame , Cluster_K)
+{
+  FrameggPlotCluster <- data.frame(matrix(ncol = 5 , nrow = 24*length(FrameBuilding[,1])))
+  colnames(FrameggPlotCluster) <- c("HOUR" , "TEMP" , "CLUSTER" , "DAY" , "TYPE")
+  VectorDia <- c(0:23)
+  FrameggPlotCluster[,1] <- rep(VectorDia , times = length(FrameBuilding[,1]))
+  VectorDem <- as.vector(FrameBuilding[1,1:24])
+  for (n in 2:length(FrameBuilding[,1]))
+    VectorDem <- cbind(VectorDem, FrameBuilding[n,1:24])
+  FrameggPlotCluster[,2] <- t(VectorDem[1,])
+  VectorCluster <- rep(ClusterFrame[1,Cluster_K-2] , times = 24)
+  for (n in 2:length(ClusterFrame[,1]))
+    VectorCluster <- c(VectorCluster , rep(ClusterFrame[n,Cluster_K-2] , times = 24))
+  FrameggPlotCluster[,3] <- factor(VectorCluster , levels = as.factor(1:Cluster_K))
+  VectorDay <- rep(1, times = 24)
+  for (n in 2:length(FrameBuilding[,1]))
+    VectorDay <- c(VectorDay , rep(n, times = 24))
+  FrameggPlotCluster[,4] <- VectorDay 
+  FrameggPlotCluster[,5] <- "REAL"
+  return(FrameggPlotCluster)
+}
+
+### FUNCION 3 <-- DIBUJAR
+DibujandoClusteres <- function(FrameggPlotCluster , Cluster_K)
+{
+  FrameDefPlot <- rbind.data.frame(FrameggPlotCluster)
+  #### PARA CADA
+  NumeroCol <- c()
+  if (Cluster_K == 3 | Cluster_K == 6 | Cluster_K == 5 | Cluster_K > 6)
+    NumeroCol <- 3
+  if (Cluster_K == 4)
+    NumeroCol <- 2
+  dev.new()
+  ggplot(data = FrameggPlotCluster, aes(x = HOUR , y = `TEMP` , group = DAY , colour = CLUSTER)) + geom_line() + 
+    facet_wrap(~ CLUSTER , ncol = NumeroCol) + scale_color_brewer(palette = "Paired") + 
+    theme(axis.title = element_text(size = 18 , face = "bold") , axis.text = element_text(size = 18)) + 
+    theme(panel.background = element_blank() , panel.grid.major =  element_line(colour = "grey" , size = 0.2)) + 
+    theme(title = element_text(size = 16 , face = "bold")) + theme(legend.key=element_blank()) + 
+    theme(legend.title = element_text(size = 20 , face = "bold") , legend.text = element_text(size = 24)) + 
+    theme(strip.text.x = element_text(size = 20 , face = "bold")) + 
+    guides(color = guide_legend(override.aes = list(size = 3))) + 
+    theme(legend.key.width = unit(1.2,"cm"))
+}
+
+#### DIBUJANDO
+
+DibujandoClusteres(TransformandoFrame(FrameProfilesNormalizado , ClusterFrame , 3) , 3)
 
 
 ### SI TENEIS TIEMPO, DIBUJAR LOS PERFILES DE DELTA_T, SEPARADOS POR CLUSTERS
